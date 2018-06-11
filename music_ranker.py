@@ -35,11 +35,11 @@ if __name__ == '__main__':
         # proper formatting for CLI
         special_characters = [" ", "'", "\"", "&", "(", ")", ";"]
         for sc in special_characters:
-            filename = filename.replace(sc, "\\" + sc)
+            filename_bash = filename.replace(sc, "\\" + sc)
 
         # PLAYING SONG
         # figure out song length in seconds
-        p = sp.Popen(file_length_query.format(filename), shell=True, stdout=sp.PIPE)
+        p = sp.Popen(file_length_query.format(filename_bash), shell=True, stdout=sp.PIPE)
         out, err = p.communicate()
         out = str(out, "utf-8")
         exp = re.compile(r"ID_LENGTH=\d*\.*\d*")
@@ -73,7 +73,7 @@ if __name__ == '__main__':
             start_pos = length - window_length
 
         # play music
-        sp.call(player_command.format(start_pos, window_length, filename), shell=True)
+        sp.call(player_command.format(start_pos, window_length, filename_bash), shell=True)
 
         # GET/WRITE RANK
         # query user for rank
@@ -105,11 +105,13 @@ if __name__ == '__main__':
 
         if write_header:
             rec.write(
-                "user_time\tfile_name\tsong_part\tstart_position\tplay_window\tsong_length\trank\n"
+                "user_time\ttime_stamp\tfile_name\tsong_part\tstart_position\tplay_window\tsong_length\trank\n"
             )
 
+        time_stamp = time.time()
         rec.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(
-            time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()),
+            time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime(time_stamp)),
+            int(np.around(time_stamp*1000)),
             filename,
             song_part,
             start_pos,
