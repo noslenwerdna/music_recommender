@@ -33,8 +33,9 @@ if __name__ == '__main__':
             print("tab in filename {0}".format(filename))
             continue
         # proper formatting for CLI
-        filename = filename.replace(" ", "\\ ")
-        filename = filename.replace("'", "\\'")
+        special_characters = [" ", "'", "\"", "&", "(", ")", ";"]
+        for sc in special_characters:
+            filename = filename.replace(sc, "\\" + sc)
 
         # PLAYING SONG
         # figure out song length in seconds
