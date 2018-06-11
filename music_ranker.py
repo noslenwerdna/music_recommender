@@ -52,12 +52,12 @@ if __name__ == '__main__':
                 sys.exit()
             length = int(length.split(".")[0])
         else:
-            print("could not parse song length")
+            print("could not parse song length: {0}".format(filename))
             continue
 
         # songs must be less than window length + 2 seconds
         if length <= window_length + 2:
-            print("song too short")
+            print("song too short: {0}".format(filename))
             continue
        
         # equal chances of picking start/middle/end of song
