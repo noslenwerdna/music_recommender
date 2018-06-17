@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -6,6 +6,7 @@ import re
 import time
 import subprocess as sp
 import numpy as np
+import unicodedata
 
 if __name__ == '__main__':
     # get list of files to run over
@@ -34,14 +35,16 @@ if __name__ == '__main__':
             continue
         # proper formatting for CLI
         special_characters = [" ", "'", "\"", "&", "(", ")", ";"]
+        filename_bash = filename
         for sc in special_characters:
-            filename_bash = filename.replace(sc, "\\" + sc)
+            filename_bash = filename_bash.replace(sc, "\\" + sc)
 
         # PLAYING SONG
         # figure out song length in seconds
         p = sp.Popen(file_length_query.format(filename_bash), shell=True, stdout=sp.PIPE)
         out, err = p.communicate()
-        out = str(out, "utf-8")
+        #out = str(out, "utf-8")
+        out = str(out)
         exp = re.compile(r"ID_LENGTH=\d*\.*\d*")
         # e.g. ID_LENGTH=270.00
         if exp is not None:
@@ -77,17 +80,18 @@ if __name__ == '__main__':
 
         # GET/WRITE RANK
         # query user for rank
+        allowed_inputs = ("yy", "y", "m", "n", "nn", "q")
         rank_input = None
         tries = 0
-        while rank_input not in ("y", "m", "n", "q") and tries < max_tries:
-            rank_input = input("Enter y/m/n\n")
+        while rank_input not in allowed_inputs and tries < max_tries:
+            rank_input = input("Enter yy/y/m/n/nn\n")
             tries += 1
 
         if rank_input == "q":
             print("exiting")
             sys.exit()
 
-        if rank_input not in ("y", "m", "n", "q"):
+        if rank_input not in allowed_inputs:
             print("bad input, exiting")
             sys.exit()
 
@@ -105,14 +109,15 @@ if __name__ == '__main__':
 
         if write_header:
             rec.write(
-                "user_time\ttime_stamp\tfile_name\tsong_part\tstart_position\tplay_window\tsong_length\trank\n"
+                "user_time\ttime_stamp\tfile_name\tshort_file_name\tsong_part\tstart_position\tplay_window\tsong_length\trank\n"
             )
 
         time_stamp = time.time()
-        rec.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(
+        rec.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n".format(
             time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime(time_stamp)),
             int(np.around(time_stamp*1000)),
             filename,
+            os.path.basename(filename),
             song_part,
             start_pos,
             window_length,
