@@ -51,6 +51,8 @@ def get_features(
     time_stamp=None
     ):
 
+    print("working on {0}".format(short_fn))
+
     # retrieve amplitudes
     y, sr = librosa.load(fn, offset=start_pos, duration=window, sr=None)
     # separate into harmonic and percussive components
@@ -67,7 +69,7 @@ def get_features(
     # get simple features
     tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
 
-    key = key.find_key(librosa.feature.chroma_cqt(y=y_h, sr=sr, n_chroma=12))
+    k = key.find_key(librosa.feature.chroma_cqt(y=y_h, sr=sr, n_chroma=12))
 
     # save
     data = {
@@ -76,11 +78,11 @@ def get_features(
     }
     pickle.dump(data, open("data/" + "amp_sr_{0}.pkl".format(time_stamp), "wb"))
 
-    return tempo, key
+    return pd.Series([tempo, k[0], k[1]], index=["tempo", "key", "key_tone"])
 
 def enrich_music(df):
 
-    tempo, key = df.apply(lambda x: 
+    edf = df.apply(lambda x: 
         get_features(
             fn=x.file_name, 
             short_fn=x.short_file_name, 
@@ -90,7 +92,8 @@ def enrich_music(df):
         ), 
         axis=1)
 
-    return df.assign(tempo=tempo, key=key[0], key_tone=key[1])
+    #df.assign(tempo=tempo, key=key[0], key_tone=key[1])
+    return pd.concat([df, edf], axis=1)
 
 if __name__ == "__main__":
     df = pd.read_csv("like_record.tsv", sep="\t")
